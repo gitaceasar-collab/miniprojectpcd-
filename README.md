@@ -51,54 +51,52 @@ Kemudian dihitung persentase foreground terhadap seluruh piksel pada area ROI de
 ```text
 Foreground (%) =
 Jumlah Foreground Pixel / Jumlah Seluruh Pixel × 100%
-## Hasil Pengujian
+Sistem menggunakan batas keputusan sebesar 1.5%.
 
-Sistem diuji menggunakan 9 citra ijazah dengan ukuran **2481 × 3506 piksel**.
+Jika rasio > 1.5%  → SIGNATURE PRESENT
+Jika rasio ≤ 1.5% → SIGNATURE ABSENT
+Hasil Pengujian
+
+Sistem diuji menggunakan 9 citra ijazah dengan ukuran 2481 × 3506 piksel.
 
 Setiap citra memiliki kondisi kualitas yang berbeda, seperti blur, noise, kontras rendah, perubahan warna, resolusi rendah, dan artefak kompresi.
 
-| No | Nama File | Jumlah Piksel TTD | Rasio Piksel | Status |
-|---|---|---:|---:|---|
-| 1 | `01_HighQuality_Enhanced.jpg` | 48.376 | 7.41% | SIGNATURE PRESENT |
-| 2 | `02_LowContrast.jpg` | 48.933 | 7.50% | SIGNATURE PRESENT |
-| 3 | `03_Blurred.jpg` | 76.256 | 11.69% | SIGNATURE PRESENT |
-| 4 | `04_HighNoise.jpg` | 46.717 | 7.16% | SIGNATURE PRESENT |
-| 5 | `05_LowResolution_Upsampled.jpg` | 60.048 | 9.20% | SIGNATURE PRESENT |
-| 6 | `06_Faded_Underexposed.jpg` | 49.777 | 7.63% | SIGNATURE PRESENT |
-| 7 | `07_ColorShift_WarmTint.jpg` | 49.062 | 7.52% | SIGNATURE PRESENT |
-| 8 | `08_JPEGCompression_Artifacts.jpg` | 50.344 | 7.72% | SIGNATURE PRESENT |
-| 9 | `09_CombinedDegradation.jpg` | 57.502 | 8.81% | SIGNATURE PRESENT |
+No	Nama File	Jumlah Piksel TTD	Rasio Piksel	Status
+1	01_HighQuality_Enhanced.jpg	48.376	7.41%	SIGNATURE PRESENT
+2	02_LowContrast.jpg	48.933	7.50%	SIGNATURE PRESENT
+3	03_Blurred.jpg	76.256	11.69%	SIGNATURE PRESENT
+4	04_HighNoise.jpg	46.717	7.16%	SIGNATURE PRESENT
+5	05_LowResolution_Upsampled.jpg	60.048	9.20%	SIGNATURE PRESENT
+6	06_Faded_Underexposed.jpg	49.777	7.63%	SIGNATURE PRESENT
+7	07_ColorShift_WarmTint.jpg	49.062	7.52%	SIGNATURE PRESENT
+8	08_JPEGCompression_Artifacts.jpg	50.344	7.72%	SIGNATURE PRESENT
+9	09_CombinedDegradation.jpg	57.502	8.81%	SIGNATURE PRESENT
 
-Berdasarkan hasil pengujian, seluruh 9 citra menghasilkan status **SIGNATURE PRESENT**. Nilai rasio piksel berada pada rentang **7.16% hingga 11.69%**, sehingga seluruh hasil berada di atas batas keputusan **1.5%**.
+Berdasarkan hasil pengujian, seluruh 9 citra menghasilkan status SIGNATURE PRESENT. Nilai rasio piksel berada pada rentang 7.16% hingga 11.69%, sehingga seluruh hasil berada di atas batas keputusan 1.5%.
 
----
-
-## Analisis
-
-### 1. Mengapa Thresholding Diperlukan?
+Analisis
+1. Mengapa Thresholding Diperlukan?
 
 Thresholding diperlukan untuk mengubah citra grayscale menjadi citra biner sehingga foreground dan background dapat dipisahkan.
 
 Dengan hasil segmentasi tersebut, sistem dapat menghitung jumlah piksel yang dianggap sebagai bagian dari objek tanda tangan. Nilai tersebut kemudian digunakan untuk menentukan keberadaan tanda tangan.
 
-### 2. Apa yang Terjadi Jika Threshold Terlalu Rendah atau Terlalu Tinggi?
+2. Apa yang Terjadi Jika Threshold Terlalu Rendah atau Terlalu Tinggi?
 
 Jika threshold terlalu rendah, sebagian objek tanda tangan dapat tidak masuk ke dalam foreground. Hal ini dapat menyebabkan jumlah piksel tanda tangan menjadi lebih sedikit.
 
 Sebaliknya, jika threshold terlalu tinggi, bagian background, noise, atau pola pada dokumen dapat ikut dianggap sebagai foreground. Akibatnya, jumlah piksel dapat menjadi lebih besar dari kondisi sebenarnya.
 
-Untuk mengatasi perbedaan kondisi citra, project ini menggunakan **Global Threshold** dan **Otsu Threshold**. Hasil segmentasi kemudian diperbaiki menggunakan morphology **Opening** dan **Closing**.
+Untuk mengatasi perbedaan kondisi citra, project ini menggunakan Global Threshold dan Otsu Threshold. Hasil segmentasi kemudian diperbaiki menggunakan morphology Opening dan Closing.
 
----
+Kesimpulan
 
-## Kesimpulan
+Berdasarkan hasil pengujian terhadap 9 citra, seluruh citra menghasilkan status SIGNATURE PRESENT.
 
-Berdasarkan hasil pengujian terhadap 9 citra, seluruh citra menghasilkan status **SIGNATURE PRESENT**.
+Rasio foreground yang diperoleh berada pada rentang 7.16% sampai 11.69%, sedangkan batas keputusan yang digunakan adalah 1.5%.
 
-Rasio foreground yang diperoleh berada pada rentang **7.16% sampai 11.69%**, sedangkan batas keputusan yang digunakan adalah **1.5%**.
-
-Proses deteksi dilakukan melalui beberapa tahap, yaitu **ROI Cropping, Grayscale, Thresholding, Morphological Operations**, dan **Pixel Ratio Calculation**.
+Proses deteksi dilakukan melalui beberapa tahap, yaitu ROI Cropping, Grayscale, Thresholding, Morphological Operations, dan Pixel Ratio Calculation.
 
 Hasil pengujian menunjukkan bahwa metode tersebut dapat digunakan untuk melakukan segmentasi dan mendeteksi keberadaan tanda tangan pada citra dokumen berdasarkan jumlah foreground pixel.
 
-> **Catatan:** Pengujian yang dilakukan pada dataset ini baru menggunakan citra yang menghasilkan kondisi `SIGNATURE PRESENT`. Pengujian terhadap citra yang benar-benar tidak memiliki tanda tangan diperlukan untuk mengevaluasi kondisi `SIGNATURE ABSENT`.
+Catatan: Pengujian yang dilakukan pada dataset ini baru menggunakan citra yang menghasilkan kondisi SIGNATURE PRESENT. Pengujian terhadap citra yang benar-benar tidak memiliki tanda tangan diperlukan untuk mengevaluasi kondisi SIGNATURE ABSENT.
