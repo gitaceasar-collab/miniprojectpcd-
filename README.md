@@ -7,7 +7,7 @@
 
 ## TUGAS 6 : DETEKSI TANDA TANGAN (Signature Detection)
 
-Project ini bertujuan untuk mendeteksi keberadaan tanda tangan pada dokumen ijazah menggunakan teknik pengolahan citra digital. Proses deteksi dilakukan dengan mengambil area tertentu pada dokumen, melakukan segmentasi citra, membersihkan hasil segmentasi, kemudian menghitung jumlah piksel foreground sebagai dasar pengambilan keputusan.
+Project ini bertujuan untuk mendeteksi keberadaan tanda tangan pada dokumen ijazah menggunakan teknik pengolahan citra digital. Proses deteksi dilakukan dengan mengambil area tertentu pada dokumen, mengubah citra menjadi grayscale, melakukan thresholding, memperbaiki hasil segmentasi menggunakan operasi morfologi, kemudian menghitung jumlah foreground pixel sebagai dasar pengambilan keputusan.
 
 ## Alur Pemrosesan (Pipeline)
 
@@ -39,9 +39,9 @@ Pada project ini digunakan dua metode thresholding, yaitu:
 
 Global Threshold menggunakan nilai threshold tetap sebesar **127**.
 
-Sementara itu, **Otsu Threshold** menentukan nilai threshold secara otomatis berdasarkan distribusi intensitas piksel pada citra.
+Sementara itu, **Otsu Threshold** menentukan nilai threshold secara otomatis berdasarkan distribusi intensitas piksel pada citra, sehingga tidak memerlukan penentuan nilai threshold secara manual.
 
-Hasil thresholding berupa citra biner yang kemudian digunakan sebagai dasar untuk proses selanjutnya.
+Hasil thresholding berupa citra biner yang kemudian digunakan sebagai dasar untuk proses morfologi.
 
 ### 4. Morphological Operations
 
@@ -67,7 +67,7 @@ Sistem menggunakan batas keputusan sebesar **1.5%**.
 - Jika rasio foreground **> 1.5%** → **SIGNATURE PRESENT**
 - Jika rasio foreground **≤ 1.5%** → **SIGNATURE ABSENT**
 
-Nilai 1.5% digunakan sebagai batas keputusan awal pada project dan perlu dievaluasi kembali apabila digunakan pada dataset yang lebih beragam.
+Nilai **1.5%** digunakan sebagai batas keputusan awal pada project ini. Nilai tersebut dapat dievaluasi kembali apabila sistem diuji menggunakan dataset yang lebih beragam.
 
 ## Hasil Pengujian
 
@@ -75,7 +75,7 @@ Pengujian dilakukan terhadap **9 citra ijazah** dengan ukuran **2481 × 3506 pik
 
 Setiap citra memiliki kondisi kualitas yang berbeda, seperti kontras rendah, blur, noise, perubahan warna, resolusi rendah, dan artefak kompresi.
 
-| No | Nama File | Jumlah Piksel TTD | Rasio Piksel | Status |
+| **No** | **Nama File** | **Jumlah Foreground Pixel** | **Rasio Foreground** | **Status** |
 |---|---|---:|---:|---|
 | 1 | `01_HighQuality_Enhanced.jpg` | 48.376 | 7.41% | SIGNATURE PRESENT |
 | 2 | `02_LowContrast.jpg` | 48.933 | 7.50% | SIGNATURE PRESENT |
@@ -109,15 +109,15 @@ Jika threshold kurang sesuai, sebagian goresan tanda tangan dapat tidak terdetek
 
 Untuk mengatasi perbedaan kondisi citra, project ini menggunakan dua pendekatan thresholding, yaitu **Global Threshold** dan **Otsu Threshold**.
 
-Hasil segmentasi kemudian diperbaiki menggunakan operasi **Opening** dan **Closing** untuk mengurangi noise serta memperbaiki bagian foreground yang terputus.
+Hasil segmentasi kemudian diperbaiki menggunakan operasi **Opening** dan **Closing** untuk membantu mengurangi noise serta memperbaiki bagian foreground yang terputus.
 
 ### 3. Perbandingan Global Threshold dan Otsu Threshold
 
-**Global Threshold** menggunakan nilai threshold yang telah ditentukan, yaitu 127. Metode ini sederhana dan mudah diterapkan, tetapi hasilnya dapat dipengaruhi oleh kondisi pencahayaan dan kualitas citra.
+**Global Threshold** menggunakan nilai threshold yang telah ditentukan, yaitu **127**. Metode ini sederhana dan mudah diterapkan, tetapi hasil segmentasinya dapat dipengaruhi oleh kondisi pencahayaan dan distribusi intensitas pada citra.
 
-**Otsu Threshold** menentukan nilai threshold secara otomatis berdasarkan distribusi intensitas piksel. Metode ini lebih adaptif terhadap perbedaan distribusi intensitas pada citra.
+**Otsu Threshold** menentukan nilai threshold secara otomatis berdasarkan distribusi intensitas piksel pada citra. Dengan demikian, metode ini tidak memerlukan penentuan nilai threshold secara manual.
 
-Dalam project ini, kedua metode digunakan untuk melakukan proses segmentasi sebelum hasilnya diperbaiki menggunakan operasi morfologi.
+Kedua metode digunakan dalam project untuk membandingkan proses segmentasi citra sebelum hasilnya diperbaiki menggunakan operasi morfologi.
 
 ## Kesimpulan
 
@@ -134,6 +134,8 @@ Proses deteksi dilakukan melalui beberapa tahap, yaitu:
 5. **Pixel Ratio Calculation**
 6. **Pengambilan Keputusan**
 
-Metode tersebut digunakan untuk melakukan segmentasi area tanda tangan dan menentukan keberadaan tanda tangan berdasarkan jumlah foreground pixel pada ROI.
+Metode tersebut digunakan untuk melakukan segmentasi pada area ROI dan menentukan keberadaan tanda tangan berdasarkan jumlah foreground pixel.
+
+Hasil pengujian menunjukkan bahwa seluruh citra yang digunakan dapat menghasilkan status **SIGNATURE PRESENT** berdasarkan batas keputusan yang telah ditentukan.
 
 Namun, pengujian pada dataset ini baru menggunakan citra yang memiliki tanda tangan. Oleh karena itu, pengujian menggunakan citra yang benar-benar **tidak memiliki tanda tangan** masih diperlukan untuk mengevaluasi hasil **SIGNATURE ABSENT** dan mengetahui kemampuan sistem dalam membedakan kedua kondisi tersebut.
