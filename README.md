@@ -7,7 +7,7 @@
 
 ## TUGAS 6 : DETEKSI TANDA TANGAN (Signature Detection)
 
-Project ini bertujuan untuk mendeteksi keberadaan tanda tangan pada dokumen ijazah menggunakan teknik pengolahan citra digital. Proses deteksi dilakukan dengan mengambil area tertentu pada dokumen, mengubah citra menjadi grayscale, melakukan thresholding, memperbaiki hasil segmentasi menggunakan operasi morfologi, kemudian menghitung jumlah foreground pixel sebagai dasar pengambilan keputusan.
+Project ini bertujuan untuk mendeteksi keberadaan tanda tangan pada dokumen ijazah menggunakan teknik pengolahan citra digital. Proses dilakukan dengan mengambil area tertentu pada dokumen, mengubah citra menjadi grayscale, melakukan thresholding, memperbaiki hasil segmentasi menggunakan operasi morfologi, kemudian menghitung jumlah foreground pixel sebagai dasar pengambilan keputusan.
 
 ## Alur Pemrosesan (Pipeline)
 
@@ -15,44 +15,56 @@ Project ini bertujuan untuk mendeteksi keberadaan tanda tangan pada dokumen ijaz
 
 Tahap pertama adalah menentukan **Region of Interest (ROI)**, yaitu area tertentu pada dokumen yang diperkirakan sebagai lokasi tanda tangan kepala sekolah.
 
-Pada project ini, ROI berada pada bagian kanan atas dokumen. Pemotongan dilakukan berdasarkan persentase ukuran gambar, yaitu:
+Pada project ini, area ROI ditentukan berdasarkan persentase ukuran gambar, yaitu:
 
 - **10%–35% dari tinggi gambar**
 - **65%–95% dari lebar gambar**
 
-Pendekatan berdasarkan persentase digunakan agar area ROI dapat menyesuaikan ukuran citra yang digunakan.
+Area tersebut digunakan sebagai bagian citra yang akan diproses lebih lanjut.
+
+Pendekatan berdasarkan persentase digunakan agar pemotongan ROI dapat menyesuaikan ukuran citra yang digunakan.
 
 ### 2. Grayscale Conversion
 
 Citra hasil crop kemudian diubah menjadi **grayscale** atau citra keabuan.
 
-Grayscale digunakan untuk mengubah citra yang sebelumnya memiliki beberapa kanal warna menjadi satu kanal intensitas. Dengan demikian, proses thresholding dan pemisahan antara foreground dan background dapat dilakukan dengan lebih sederhana.
+Grayscale digunakan untuk mengubah citra yang memiliki beberapa kanal warna menjadi satu kanal intensitas. Dengan demikian, proses thresholding dapat dilakukan dengan lebih sederhana untuk memisahkan foreground dan background.
 
 ### 3. Thresholding
 
-Tahap berikutnya adalah melakukan thresholding untuk memisahkan bagian foreground dan background.
+Tahap berikutnya adalah melakukan thresholding untuk memisahkan bagian foreground dan background pada citra grayscale.
 
 Pada project ini digunakan dua metode thresholding, yaitu:
 
 - **Global Threshold**
 - **Otsu Threshold**
 
+#### Global Threshold
+
 Global Threshold menggunakan nilai threshold tetap sebesar **127**.
 
-Sementara itu, **Otsu Threshold** menentukan nilai threshold secara otomatis berdasarkan distribusi intensitas piksel pada citra, sehingga tidak memerlukan penentuan nilai threshold secara manual.
+Metode ini menggunakan satu nilai threshold yang sama untuk seluruh piksel pada citra.
 
-Hasil thresholding berupa citra biner yang kemudian digunakan sebagai dasar untuk proses morfologi.
+#### Otsu Threshold
+
+Otsu Threshold menentukan nilai threshold secara otomatis berdasarkan distribusi intensitas piksel pada citra. Dengan demikian, nilai threshold tidak perlu ditentukan secara manual.
+
+Pada proses akhir deteksi, hasil **Otsu Threshold** digunakan sebagai dasar untuk proses morphological operations dan perhitungan foreground pixel.
 
 ### 4. Morphological Operations
 
-Setelah proses thresholding, dilakukan operasi morfologi untuk memperbaiki hasil segmentasi.
+Setelah proses Otsu Threshold, dilakukan operasi morfologi untuk membantu memperbaiki hasil segmentasi.
 
 Operasi morfologi yang digunakan adalah:
 
-- **Opening**, digunakan untuk membantu mengurangi noise dan objek kecil yang tidak diperlukan.
-- **Closing**, digunakan untuk membantu menutup celah kecil serta menghubungkan bagian foreground yang terputus.
+- **Opening**, untuk membantu mengurangi noise dan objek kecil yang tidak diperlukan.
+- **Closing**, untuk membantu menutup celah kecil serta menghubungkan bagian foreground yang terputus.
 
 Kedua operasi tersebut menggunakan **kernel berukuran 3 × 3 piksel**.
+
+Urutan prosesnya adalah:
+
+**Otsu Threshold → Opening → Closing**
 
 ### 5. Pixel Ratio Calculation
 
@@ -67,7 +79,7 @@ Sistem menggunakan batas keputusan sebesar **1.5%**.
 - Jika rasio foreground **> 1.5%** → **SIGNATURE PRESENT**
 - Jika rasio foreground **≤ 1.5%** → **SIGNATURE ABSENT**
 
-Nilai **1.5%** digunakan sebagai batas keputusan awal pada project ini. Nilai tersebut dapat dievaluasi kembali apabila sistem diuji menggunakan dataset yang lebih beragam.
+Nilai **1.5%** digunakan sebagai batas keputusan awal pada project ini. Nilai tersebut masih dapat dievaluasi kembali apabila sistem diuji menggunakan dataset yang lebih beragam.
 
 ## Hasil Pengujian
 
@@ -75,7 +87,7 @@ Pengujian dilakukan terhadap **9 citra ijazah** dengan ukuran **2481 × 3506 pik
 
 Setiap citra memiliki kondisi kualitas yang berbeda, seperti kontras rendah, blur, noise, perubahan warna, resolusi rendah, dan artefak kompresi.
 
-| **No** | **Nama File** | **Jumlah Foreground Pixel** | **Rasio Foreground** | **Status** |
+| No | Nama File | Jumlah Foreground Pixel | Rasio Foreground | Status |
 |---|---|---:|---:|---|
 | 1 | `01_HighQuality_Enhanced.jpg` | 48.376 | 7.41% | SIGNATURE PRESENT |
 | 2 | `02_LowContrast.jpg` | 48.933 | 7.50% | SIGNATURE PRESENT |
@@ -99,25 +111,47 @@ Thresholding diperlukan untuk mengubah citra grayscale menjadi citra biner sehin
 
 Dalam project ini, hasil thresholding digunakan untuk memisahkan bagian yang dianggap sebagai objek atau goresan tanda tangan dari background dokumen.
 
-Setelah proses tersebut, jumlah foreground pixel dapat dihitung dan digunakan sebagai salah satu dasar untuk menentukan apakah tanda tangan terdeteksi atau tidak.
+Setelah proses segmentasi, jumlah foreground pixel dapat dihitung menggunakan `cv2.countNonZero()`. Nilai tersebut kemudian digunakan sebagai dasar untuk menentukan keberadaan tanda tangan.
 
 ### 2. Apa yang Terjadi Jika Threshold Tidak Sesuai?
 
 Nilai threshold yang tidak sesuai dapat memengaruhi hasil segmentasi.
 
-Jika threshold kurang sesuai, sebagian goresan tanda tangan dapat tidak terdeteksi sehingga jumlah foreground pixel menjadi terlalu sedikit. Sebaliknya, hasil thresholding juga dapat memasukkan bagian background atau noise sebagai foreground sehingga jumlah foreground pixel menjadi lebih besar dari kondisi sebenarnya.
+Jika threshold tidak sesuai, sebagian goresan tanda tangan dapat tidak terdeteksi sehingga jumlah foreground pixel menjadi terlalu sedikit. Sebaliknya, bagian background atau noise juga dapat ikut dianggap sebagai foreground sehingga jumlah foreground pixel menjadi lebih besar dari kondisi sebenarnya.
 
-Untuk mengatasi perbedaan kondisi citra, project ini menggunakan dua pendekatan thresholding, yaitu **Global Threshold** dan **Otsu Threshold**.
+Hal tersebut dapat memengaruhi hasil akhir deteksi.
 
-Hasil segmentasi kemudian diperbaiki menggunakan operasi **Opening** dan **Closing** untuk membantu mengurangi noise serta memperbaiki bagian foreground yang terputus.
+Pada project ini digunakan **Global Threshold** dan **Otsu Threshold** untuk melihat pendekatan segmentasi yang berbeda. Untuk proses deteksi akhir digunakan hasil Otsu yang kemudian diperbaiki dengan operasi Opening dan Closing.
 
 ### 3. Perbandingan Global Threshold dan Otsu Threshold
 
 **Global Threshold** menggunakan nilai threshold yang telah ditentukan, yaitu **127**. Metode ini sederhana dan mudah diterapkan, tetapi hasil segmentasinya dapat dipengaruhi oleh kondisi pencahayaan dan distribusi intensitas pada citra.
 
-**Otsu Threshold** menentukan nilai threshold secara otomatis berdasarkan distribusi intensitas piksel pada citra. Dengan demikian, metode ini tidak memerlukan penentuan nilai threshold secara manual.
+**Otsu Threshold** menentukan nilai threshold secara otomatis berdasarkan distribusi intensitas piksel pada citra. Metode ini tidak memerlukan penentuan nilai threshold secara manual.
 
-Kedua metode digunakan dalam project untuk membandingkan proses segmentasi citra sebelum hasilnya diperbaiki menggunakan operasi morfologi.
+Kedua metode digunakan pada tahap thresholding untuk melihat hasil pemisahan foreground dan background. Pada proses akhir deteksi, hasil Otsu digunakan untuk tahap morphological operations dan perhitungan foreground pixel.
+
+### 4. Fungsi Morphological Operations
+
+Operasi morphology digunakan untuk membantu memperbaiki hasil segmentasi setelah thresholding.
+
+**Opening** membantu mengurangi noise dan objek kecil yang tidak diperlukan.
+
+**Closing** membantu menutup celah kecil serta menghubungkan bagian foreground yang terputus.
+
+Dengan menggunakan kedua operasi tersebut, hasil segmentasi dapat menjadi lebih bersih sebelum dilakukan perhitungan foreground pixel.
+
+### 5. Dasar Pengambilan Keputusan
+
+Setelah proses morphology selesai, jumlah foreground pixel dihitung menggunakan `cv2.countNonZero()`.
+
+Jumlah tersebut kemudian dibandingkan dengan seluruh piksel pada ROI untuk mendapatkan rasio foreground.
+
+Batas keputusan yang digunakan adalah **1.5%**.
+
+Jika nilai rasio lebih dari 1.5%, sistem memberikan hasil **SIGNATURE PRESENT**. Jika nilai rasio sama dengan atau kurang dari 1.5%, sistem memberikan hasil **SIGNATURE ABSENT**.
+
+Batas 1.5% merupakan nilai keputusan awal yang digunakan pada project ini dan dapat disesuaikan apabila tersedia dataset pengujian yang lebih lengkap.
 
 ## Kesimpulan
 
@@ -129,13 +163,13 @@ Proses deteksi dilakukan melalui beberapa tahap, yaitu:
 
 1. **ROI Cropping**
 2. **Grayscale Conversion**
-3. **Thresholding**
+3. **Global Threshold dan Otsu Threshold**
 4. **Morphological Operations**
 5. **Pixel Ratio Calculation**
 6. **Pengambilan Keputusan**
 
-Metode tersebut digunakan untuk melakukan segmentasi pada area ROI dan menentukan keberadaan tanda tangan berdasarkan jumlah foreground pixel.
+Pada proses deteksi akhir, hasil **Otsu Threshold** digunakan untuk proses **Opening dan Closing**, kemudian jumlah foreground pixel dihitung untuk memperoleh rasio foreground.
 
-Hasil pengujian menunjukkan bahwa seluruh citra yang digunakan dapat menghasilkan status **SIGNATURE PRESENT** berdasarkan batas keputusan yang telah ditentukan.
+Hasil pengujian menunjukkan bahwa seluruh citra yang digunakan menghasilkan status **SIGNATURE PRESENT** berdasarkan batas keputusan yang telah ditentukan.
 
 Namun, pengujian pada dataset ini baru menggunakan citra yang memiliki tanda tangan. Oleh karena itu, pengujian menggunakan citra yang benar-benar **tidak memiliki tanda tangan** masih diperlukan untuk mengevaluasi hasil **SIGNATURE ABSENT** dan mengetahui kemampuan sistem dalam membedakan kedua kondisi tersebut.
